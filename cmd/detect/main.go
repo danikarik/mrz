@@ -33,7 +33,7 @@ func main() {
 
 	// TODO:
 	gradX := blackhat.Clone()
-	gocv.Sobel(blackhat, &gradX, gocv.MatTypeCV32F, 1, 0, -1, 0, 0, gocv.BorderConstant)
+	gocv.Sobel(blackhat, &gradX, gocv.MatTypeCV32F, 1, 0, -1, 1, 0, gocv.BorderConstant)
 
 	img, err := gradX.ToImage()
 	if err != nil {
