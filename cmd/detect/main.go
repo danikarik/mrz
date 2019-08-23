@@ -17,41 +17,43 @@ func main() {
 	sqKernel := gocv.GetStructuringElement(gocv.MorphRect, image.Point{X: 21, Y: 21})
 
 	original := gocv.IMRead("testdata/passport_01.jpg", gocv.IMReadUnchanged)
-	dst := original.Clone()
+	original = mrz.Resize(original, 0, 600, gocv.InterpolationArea)
 
-	dst = mrz.Resize(dst, 0, 600, gocv.InterpolationArea)
-	gocv.CvtColor(dst, &dst, gocv.ColorBGRToGray)
+	gray := original.Clone()
+	gocv.CvtColor(original, &gray, gocv.ColorBGRToGray)
 
-	gray := dst.Clone()
-	gocv.GaussianBlur(dst, &gray, image.Point{X: 3, Y: 3}, 0, 0, gocv.BorderConstant)
-	gocv.MorphologyEx(gray, &dst, gocv.MorphBlackhat, rectKernel)
+	gocv.GaussianBlur(gray, &gray, image.Point{X: 3, Y: 3}, 0, 0, gocv.BorderConstant)
+	blackhat := gray.Clone()
+	gocv.MorphologyEx(gray, &blackhat, gocv.MorphBlackhat, rectKernel)
 
-	gocv.Sobel(dst, &dst, 0, 1, 0, 1, 1, 0, gocv.BorderConstant)
-	gocv.ConvertScaleAbs(dst, &dst, 1, 0)
+	gradX := blackhat.Clone()
+	gocv.Sobel(blackhat, &gradX, 0, 1, 0, 1, 1, 0, gocv.BorderConstant)
+	gocv.ConvertScaleAbs(gradX, &gradX, 1, 0)
 
-	gocv.MorphologyEx(dst, &dst, gocv.MorphClose, rectKernel)
-	gocv.Threshold(dst, &dst, 0, 255, gocv.ThresholdBinary|gocv.ThresholdOtsu)
+	gocv.MorphologyEx(gradX, &gradX, gocv.MorphClose, rectKernel)
+	thresh := gradX.Clone()
+	gocv.Threshold(gradX, &thresh, 0, 255, gocv.ThresholdBinary|gocv.ThresholdOtsu)
 
-	gocv.MorphologyEx(dst, &dst, gocv.MorphClose, sqKernel)
+	gocv.MorphologyEx(thresh, &thresh, gocv.MorphClose, sqKernel)
 	m := gocv.NewMatWithSize(3, 3, gocv.MatTypeCV8U)
-	gocv.Erode(dst, &dst, m)
+	gocv.Erode(thresh, &thresh, m)
 
 	// p = int(image.shape[1] * 0.05)
 	// thresh[:, 0:p] = 0
 	// thresh[:, image.shape[1] - p:] = 0
 	// TODO:
-	p := int(float64(dst.Size()[1]) * 0.05)
-	for i := 0; i < dst.Rows(); i++ {
-		for j := 0; j < dst.Cols(); j++ {
+	p := int(float64(thresh.Size()[1]) * 0.05)
+	for i := 0; i < thresh.Rows(); i++ {
+		for j := 0; j < thresh.Cols(); j++ {
 			if j < p {
-				dst.SetUCharAt(i, j, 0)
+				thresh.SetUCharAt(i, j, 0)
 			}
 		}
 	}
-	for i := 0; i < dst.Rows(); i++ {
-		for j := 0; j < dst.Cols(); j++ {
-			if dst.Size()[1]-p <= j {
-				dst.SetUCharAt(i, j, 0)
+	for i := 0; i < thresh.Rows(); i++ {
+		for j := 0; j < thresh.Cols(); j++ {
+			if original.Size()[1]-p <= j {
+				thresh.SetUCharAt(i, j, 0)
 			}
 		}
 	}
@@ -60,7 +62,7 @@ func main() {
 	// cnts = imutils.grab_contours(cnts)
 	// cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
 	// TODO:
-	cnts := gocv.FindContours(dst, gocv.RetrievalExternal, gocv.ChainApproxSimple)
+	cnts := gocv.FindContours(thresh.Clone(), gocv.RetrievalExternal, gocv.ChainApproxSimple)
 	sort.SliceStable(cnts, func(i, j int) bool {
 		return gocv.ContourArea(cnts[i]) > gocv.ContourArea(cnts[j])
 	})
