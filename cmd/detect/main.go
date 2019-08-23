@@ -79,8 +79,9 @@ func main() {
 			x, y = x-pX, y-pY
 			w, h = w+(pX*2), h+(pY*2)
 
-			// TODO:
 			// roi = image[y:y + h, x:x + w].copy()
+			// cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+			// TODO:
 			green := image.Rectangle{
 				Min: image.Point{
 					X: x,
@@ -111,7 +112,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// window := gocv.NewWindow("Hello")
-	// window.IMShow(dst)
+	// window := gocv.NewWindow("Image")
+	// window.IMShow(original)
 	// window.WaitKey(0)
 }
