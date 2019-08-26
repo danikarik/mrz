@@ -38,10 +38,6 @@ func main() {
 	m := gocv.NewMatWithSize(3, 3, gocv.MatTypeCV8U)
 	gocv.Erode(thresh, &thresh, m)
 
-	// p = int(image.shape[1] * 0.05)
-	// thresh[:, 0:p] = 0
-	// thresh[:, image.shape[1] - p:] = 0
-	// TODO:
 	p := int(float64(thresh.Size()[1]) * 0.05)
 	for i := 0; i < thresh.Rows(); i++ {
 		for j := 0; j < thresh.Cols(); j++ {
