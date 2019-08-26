@@ -78,7 +78,7 @@ func main() {
 			// roi = image[y:y + h, x:x + w].copy()
 			// cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
 			// TODO:
-			green := image.Rectangle{
+			greenBox := image.Rectangle{
 				Min: image.Point{
 					X: x,
 					Y: y,
@@ -89,7 +89,7 @@ func main() {
 				},
 			}
 			greenColor := color.RGBA{R: 0, G: 230, B: 64, A: 1}
-			gocv.Rectangle(&original, green, greenColor, 2)
+			gocv.Rectangle(&original, greenBox, greenColor, 2)
 		}
 	}
 
